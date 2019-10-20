@@ -14,7 +14,8 @@ class GoogleMapsContainer extends React.Component {
                 { id:3 , lat: 15.486143 , lng: 47.889913 , type:"Free" , address:"Hadhramaut Governorate"},
                 { id:4 , lat: 14.846135 , lng: 45.912894 , type:"Fast" , address:"Shabwah Governorate"},
                 { id:5 , lat: 16.576395 , lng: 50.367170 , type:"Slow" , address:"Al Mahrah Governorate"}
-      ]
+      ],
+      search:""
     }
     this.onMarkerClick = this.onMarkerClick.bind(this);
     this.onMapClick = this.onMapClick.bind(this);
@@ -43,12 +44,25 @@ class GoogleMapsContainer extends React.Component {
       onClick={this.onMarkerClick}/>
     })
   }
+  updateSearch(event){
+    this.setState({search: event.target.value.substr(0,20)});
+  }
+
   render() {
     const style = {
       width: '100%',
       height:'100%',
     }
+    let filteredContacts = this.state.location.filter(
+      (location) => {
+        return location.address.toLowerCase().indexOf(this.state.search.toLowerCase()) !== -1;
+      }
+    );
     return (
+      <>
+      <form>
+      <input value={this.state.search} onChange={this.updateSearch.bind(this)} />
+      </form>
       <Map
         style = { style }
         google = { this.props.google }
@@ -57,7 +71,14 @@ class GoogleMapsContainer extends React.Component {
         initialCenter = {{ lat: 15.5527, lng: 48.5164 }}
         disableDefaultUI = {true} 
       >
-       {this.displayMarker()}
+      {filteredContacts.map( location=>{
+         return <Marker key={location.id}  position={{
+           lat:location.lat,
+           lng:location.lng
+         }} type={location.type} address={location.address}
+         onClick={this.onMarkerClick}/>
+       })}
+       
         <InfoWindow
           marker = { this.state.activeMarker }
           visible = { this.state.showingInfoWindow }
@@ -68,6 +89,7 @@ class GoogleMapsContainer extends React.Component {
           </div>
         </InfoWindow>
       </Map>
+      </>
     );
   }
 }
